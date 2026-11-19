@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mindcare-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mindcare_mongo_data:/data/db
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mindcare-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - mindcare_ollama_models:/root/.ollama
+
+  ai-service:
+    image: python:3.11-slim
+    container_name: mindcare-ai-service
+    working_dir: /app
+    volumes:
+      - ./ai-service:/app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ollama
+
+  mindcare-app:
+    build: .
+    container_name: mindcare-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/mindcare_ai
+      - JWT_SECRET=change-this-production-secret-key
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1
+      - AI_SERVICE_URL=http://ai-service:8000
+    depends_on:
+      - mongodb
+      - ollama
+      - ai-service
+
+volumes:
+  mindcare_mongo_data:
+  mindcare_ollama_models:

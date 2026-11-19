@@ -1,0 +1,6 @@
+{
+  "name": "MindCare AI",
+  "description": "MindCare AI — Understand Your Mind. Manage Your Stress. Improve Your Life. AI-powered mental wellness platform with stress assessment, guided exercises, live posture monitoring, emotion journaling, sleep tracking, and Ollama AI companion.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}
